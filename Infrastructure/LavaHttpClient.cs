@@ -21,7 +21,10 @@ internal class LavaHttpClient {
     /// </summary>
     /// <param name="httpClient">HTTP client instance.</param>
     /// <param name="apiToken">API authentication token.</param>
-    public LavaHttpClient(HttpClient httpClient, string apiToken) {
+    public LavaHttpClient(
+        HttpClient httpClient,
+        string apiToken
+    ) {
         if (httpClient == null) {
             throw new ArgumentNullException(nameof(httpClient));
         }
@@ -47,9 +50,13 @@ internal class LavaHttpClient {
     /// <returns>Deserialized response.</returns>
     public async Task<TResponse> GetAsync<TResponse>(
         string path,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default
+    ) {
         var request = CreateRequest(HttpMethod.Get, path);
-        return await SendRequestAsync<TResponse>(request, cancellationToken).ConfigureAwait(false);
+        return await SendRequestAsync<TResponse>(
+            request,
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -64,13 +71,17 @@ internal class LavaHttpClient {
     public async Task<TResponse> PostAsync<TRequest, TResponse>(
         string path,
         TRequest requestBody,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default
+    ) {
         var request = CreateRequest(HttpMethod.Post, path);
 
         var jsonContent = JsonSerializer.Serialize(requestBody, JsonOptions);
         request.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-        return await SendRequestAsync<TResponse>(request, cancellationToken).ConfigureAwait(false);
+        return await SendRequestAsync<TResponse>(
+            request,
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -84,11 +95,15 @@ internal class LavaHttpClient {
     public async Task<TResponse> PostAsync<TResponse>(
         string path,
         string body,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default
+    ) {
         var request = CreateRequest(HttpMethod.Post, path);
         request.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
-        return await SendRequestAsync<TResponse>(request, cancellationToken).ConfigureAwait(false);
+        return await SendRequestAsync<TResponse>(
+            request,
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <summary>

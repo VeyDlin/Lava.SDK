@@ -15,7 +15,8 @@ public interface ILavaBusinessClient {
     /// <returns>Payoff creation response.</returns>
     Task<PayoffResponse> CreatePayoffAsync(
         CreatePayoffRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets information about a payoff.
@@ -25,7 +26,8 @@ public interface ILavaBusinessClient {
     /// <returns>Payoff information.</returns>
     Task<PayoffResponse> GetPayoffInfoAsync(
         GetPayoffInfoRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Tests API connection and token validity.
@@ -33,5 +35,6 @@ public interface ILavaBusinessClient {
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if connection is successful.</returns>
     Task<bool> PingAsync(
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

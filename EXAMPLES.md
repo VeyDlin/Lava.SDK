@@ -69,9 +69,10 @@ public class PaymentController : ControllerBase {
 
     public PaymentController(
         ILavaWalletClient lavaClient,
-        ILogger<PaymentController> logger) {
-        lavaClient = lavaClient;
-        logger = logger;
+        ILogger<PaymentController> logger
+    ) {
+        this.lavaClient = lavaClient;
+        this.logger = logger;
     }
 
     [HttpPost("create")]

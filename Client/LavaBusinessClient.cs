@@ -16,7 +16,10 @@ public class LavaBusinessClient : ILavaBusinessClient {
     /// </summary>
     /// <param name="httpClient">Configured HTTP client.</param>
     /// <param name="apiToken">Lava API token.</param>
-    public LavaBusinessClient(HttpClient httpClient, string apiToken) {
+    public LavaBusinessClient(
+        HttpClient httpClient,
+        string apiToken
+    ) {
         if (httpClient == null) {
             throw new ArgumentNullException(nameof(httpClient));
         }
@@ -31,7 +34,8 @@ public class LavaBusinessClient : ILavaBusinessClient {
     /// <inheritdoc />
     public async Task<PayoffResponse> CreatePayoffAsync(
         CreatePayoffRequest request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default
+    ) {
         if (request == null) {
             throw new ArgumentNullException(nameof(request));
         }
@@ -39,13 +43,15 @@ public class LavaBusinessClient : ILavaBusinessClient {
         return await httpClient.PostAsync<CreatePayoffRequest, PayoffResponse>(
             "business/payoff/create",
             request,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<PayoffResponse> GetPayoffInfoAsync(
         GetPayoffInfoRequest request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default
+    ) {
         if (request == null) {
             throw new ArgumentNullException(nameof(request));
         }
@@ -53,16 +59,19 @@ public class LavaBusinessClient : ILavaBusinessClient {
         return await httpClient.PostAsync<GetPayoffInfoRequest, PayoffResponse>(
             "business/payoff/info",
             request,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<bool> PingAsync(
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default
+    ) {
         try {
             var response = await httpClient.GetAsync<JsonDocument>(
                 "test/ping",
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken
+        ).ConfigureAwait(false);
 
             return response.RootElement.TryGetProperty("status", out var statusElement) &&
                    statusElement.ValueKind == JsonValueKind.True;

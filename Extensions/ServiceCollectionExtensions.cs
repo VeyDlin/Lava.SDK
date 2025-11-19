@@ -19,7 +19,8 @@ public static class ServiceCollectionExtensions {
     /// <exception cref="ArgumentException">Thrown when apiToken is empty.</exception>
     public static IServiceCollection AddLavaWalletClient(
         this IServiceCollection services,
-        string apiToken) {
+        string apiToken
+    ) {
         if (services == null) {
             throw new ArgumentNullException(nameof(services));
         }
@@ -47,7 +48,8 @@ public static class ServiceCollectionExtensions {
     public static IServiceCollection AddLavaWalletClient(
         this IServiceCollection services,
         string apiToken,
-        Action<HttpClient> configureClient) {
+        Action<HttpClient> configureClient
+    ) {
         if (services == null) {
             throw new ArgumentNullException(nameof(services));
         }
@@ -80,7 +82,8 @@ public static class ServiceCollectionExtensions {
     /// <exception cref="ArgumentException">Thrown when apiToken is empty.</exception>
     public static IServiceCollection AddLavaBusinessClient(
         this IServiceCollection services,
-        string apiToken) {
+        string apiToken
+    ) {
         if (services == null) {
             throw new ArgumentNullException(nameof(services));
         }
@@ -108,7 +111,8 @@ public static class ServiceCollectionExtensions {
     public static IServiceCollection AddLavaBusinessClient(
         this IServiceCollection services,
         string apiToken,
-        Action<HttpClient> configureClient) {
+        Action<HttpClient> configureClient
+    ) {
         if (services == null) {
             throw new ArgumentNullException(nameof(services));
         }

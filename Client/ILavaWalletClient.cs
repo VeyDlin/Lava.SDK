@@ -15,7 +15,8 @@ public interface ILavaWalletClient {
     /// <returns>Created invoice information.</returns>
     Task<InvoiceResponse> CreateInvoiceAsync(
         CreateInvoiceRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets information about an invoice.
@@ -25,7 +26,8 @@ public interface ILavaWalletClient {
     /// <returns>Invoice information.</returns>
     Task<InvoiceInfoResponse> GetInvoiceInfoAsync(
         string invoiceId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Sets webhook URL for receiving payment notifications.
@@ -34,7 +36,8 @@ public interface ILavaWalletClient {
     /// <param name="cancellationToken">Cancellation token.</param>
     Task SetWebhookUrlAsync(
         string webhookUrl,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets list of wallets on your account.
@@ -42,7 +45,8 @@ public interface ILavaWalletClient {
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of wallet information.</returns>
     Task<WalletInfo[]> GetWalletsAsync(
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Creates a withdrawal request.
@@ -52,7 +56,8 @@ public interface ILavaWalletClient {
     /// <returns>Standard response with operation details.</returns>
     Task<StandardResponse> CreateWithdrawAsync(
         CreateWithdrawRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets information about a withdrawal.
@@ -62,7 +67,8 @@ public interface ILavaWalletClient {
     /// <returns>Withdrawal information.</returns>
     Task<WithdrawInfo> GetWithdrawInfoAsync(
         string withdrawId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Creates a transfer between Lava wallets.
@@ -72,7 +78,8 @@ public interface ILavaWalletClient {
     /// <returns>Standard response with operation details.</returns>
     Task<StandardResponse> CreateTransferAsync(
         CreateTransferRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets information about a transfer.
@@ -82,7 +89,8 @@ public interface ILavaWalletClient {
     /// <returns>Transfer information.</returns>
     Task<TransferInfo> GetTransferInfoAsync(
         string transferId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets list of transactions with optional filters.
@@ -92,7 +100,8 @@ public interface ILavaWalletClient {
     /// <returns>List of transactions.</returns>
     Task<TransactionInfo[]> GetTransactionsAsync(
         GetTransactionsRequest? request = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets list of banks connected to SBP (Fast Payment System).
@@ -100,7 +109,8 @@ public interface ILavaWalletClient {
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of SBP banks.</returns>
     Task<SbpBanksResponse> GetSbpBanksAsync(
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Tests API connection and token validity.
@@ -108,5 +118,6 @@ public interface ILavaWalletClient {
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if connection is successful.</returns>
     Task<bool> PingAsync(
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
