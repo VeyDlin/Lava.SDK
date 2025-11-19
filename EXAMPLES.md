@@ -64,14 +64,14 @@ using System;
 [ApiController]
 [Route("api/[controller]")]
 public class PaymentController : ControllerBase {
-    private readonly ILavaWalletClient _lavaClient;
-    private readonly ILogger<PaymentController> _logger;
+    private readonly ILavaWalletClient lavaClient;
+    private readonly ILogger<PaymentController> logger;
 
     public PaymentController(
         ILavaWalletClient lavaClient,
         ILogger<PaymentController> logger) {
-        _lavaClient = lavaClient;
-        _logger = logger;
+        lavaClient = lavaClient;
+        logger = logger;
     }
 
     [HttpPost("create")]
@@ -89,7 +89,7 @@ public class PaymentController : ControllerBase {
                 MerchantName = "My Shop"
             };
 
-            var invoice = await _lavaClient.CreateInvoiceAsync(request);
+            var invoice = await lavaClient.CreateInvoiceAsync(request);
 
             return Ok(new {
                 success = true,
@@ -97,10 +97,10 @@ public class PaymentController : ControllerBase {
                 invoiceId = invoice.Id
             });
         } catch (LavaValidationException ex) {
-            _logger.LogWarning(ex, "Validation error creating payment");
+            logger.LogWarning(ex, "Validation error creating payment");
             return BadRequest(new { error = ex.Message });
         } catch (LavaApiException ex) {
-            _logger.LogError(ex, "API error creating payment");
+            logger.LogError(ex, "API error creating payment");
             return StatusCode(500, new { error = "Payment service error" });
         }
     }
@@ -108,7 +108,7 @@ public class PaymentController : ControllerBase {
     [HttpPost("webhook")]
     public IActionResult Webhook([FromBody] WebhookData webhook) {
         try {
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Received webhook for invoice {InvoiceId}, status: {Status}",
                 webhook.InvoiceId,
                 webhook.Status);
@@ -127,7 +127,7 @@ public class PaymentController : ControllerBase {
             // Otherwise Lava will retry up to 15 times
             return Ok();
         } catch (Exception ex) {
-            _logger.LogError(ex, "Error processing webhook");
+            logger.LogError(ex, "Error processing webhook");
             // Still return 200 to prevent retries
             return Ok();
         }
@@ -136,7 +136,7 @@ public class PaymentController : ControllerBase {
     [HttpGet("status/{invoiceId}")]
     public async Task<IActionResult> GetStatus(string invoiceId) {
         try {
-            var info = await _lavaClient.GetInvoiceInfoAsync(invoiceId);
+            var info = await lavaClient.GetInvoiceInfoAsync(invoiceId);
 
             return Ok(new {
                 invoiceId = info.Invoice.Id,
@@ -144,7 +144,7 @@ public class PaymentController : ControllerBase {
                 amount = info.Invoice.Sum
             });
         } catch (LavaApiException ex) {
-            _logger.LogError(ex, "Error fetching invoice status");
+            logger.LogError(ex, "Error fetching invoice status");
             return NotFound(new { error = "Invoice not found" });
         }
     }
@@ -157,7 +157,7 @@ public class PaymentController : ControllerBase {
 
     private void ProcessSuccessfulPayment(string orderId, string? userId, string amount) {
         // Your business logic here
-        _logger.LogInformation(
+        logger.LogInformation(
             "Processing payment: Order={OrderId}, User={UserId}, Amount={Amount}",
             orderId, userId, amount);
     }
@@ -296,11 +296,11 @@ using System.Text;
 [HttpPost("webhook")]
 public IActionResult HandleWebhook([FromBody] WebhookData webhook) {
     // Verify signature
-    var secretKey = _configuration["Lava:SecretKey"];
+    var secretKey = configuration["Lava:SecretKey"];
     var expectedSignature = ComputeSignature(webhook, secretKey);
 
     if (webhook.Sign != expectedSignature) {
-        _logger.LogWarning("Invalid webhook signature");
+        logger.LogWarning("Invalid webhook signature");
         return Ok(); // Still return 200 to prevent retries
     }
 
@@ -314,7 +314,7 @@ public IActionResult HandleWebhook([FromBody] WebhookData webhook) {
         break;
 
         default:
-        _logger.LogWarning("Unknown webhook status: {Status}", webhook.Status);
+        logger.LogWarning("Unknown webhook status: {Status}", webhook.Status);
         break;
     }
 
@@ -400,11 +400,11 @@ try {
     // Success
 } catch (LavaAuthenticationException ex) {
     // Invalid token, expired token, forbidden
-    _logger.LogError(ex, "Authentication failed");
+    logger.LogError(ex, "Authentication failed");
     return Unauthorized();
 } catch (LavaValidationException ex) {
     // Invalid parameters, amount limits, etc.
-    _logger.LogWarning(ex, "Validation failed: {ErrorCode}", ex.ErrorCode);
+    logger.LogWarning(ex, "Validation failed: {ErrorCode}", ex.ErrorCode);
 
     return BadRequest(new {
         error = ex.Message,
@@ -412,11 +412,11 @@ try {
     });
 } catch (LavaHttpException ex) {
     // Network error, timeout, server error
-    _logger.LogError(ex, "HTTP request failed: {StatusCode}", ex.StatusCode);
+    logger.LogError(ex, "HTTP request failed: {StatusCode}", ex.StatusCode);
     return StatusCode(503, new { error = "Service temporarily unavailable" });
 } catch (LavaApiException ex) {
     // Generic API error
-    _logger.LogError(ex, "Lava API error");
+    logger.LogError(ex, "Lava API error");
     return StatusCode(500, new { error = "Payment service error" });
 }
 ```

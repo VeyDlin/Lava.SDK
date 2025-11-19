@@ -51,10 +51,10 @@ using System.Runtime.InteropServices;
 [ApiController]
 [Route("api/[controller]")]
 public class PaymentController : ControllerBase {
-    private readonly ILavaWalletClient _lavaClient;
+    private readonly ILavaWalletClient lavaClient;
 
     public PaymentController(ILavaWalletClient lavaClient) {
-        _lavaClient = lavaClient;
+        lavaClient = lavaClient;
     }
 
     [HttpPost("create-invoice")]
@@ -68,7 +68,7 @@ public class PaymentController : ControllerBase {
             HookUrl = "https://yoursite.com/api/payment/webhook"
         };
 
-        var invoice = await _lavaClient.CreateInvoiceAsync(request);
+        var invoice = await lavaClient.CreateInvoiceAsync(request);
         return Ok(new { PaymentUrl = invoice.Url });
     }
 }
