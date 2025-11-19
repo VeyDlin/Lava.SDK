@@ -10,8 +10,8 @@ namespace Lava.SDK.Infrastructure;
 /// HTTP client wrapper for Lava API communication.
 /// </summary>
 internal class LavaHttpClient {
-    private readonly HttpClient _httpClient;
-    private readonly string _apiToken;
+    private readonly HttpClient httpClient;
+    private readonly string apiToken;
     private static readonly JsonSerializerOptions JsonOptions = new() {
         PropertyNameCaseInsensitive = true
     };
@@ -22,12 +22,20 @@ internal class LavaHttpClient {
     /// <param name="httpClient">HTTP client instance.</param>
     /// <param name="apiToken">API authentication token.</param>
     public LavaHttpClient(HttpClient httpClient, string apiToken) {
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _apiToken = apiToken ?? throw new ArgumentNullException(nameof(apiToken));
+        if (httpClient == null) {
+            throw new ArgumentNullException(nameof(httpClient));
+        }
 
-        if (string.IsNullOrWhiteSpace(_apiToken)) {
+        if (apiToken == null) {
+            throw new ArgumentNullException(nameof(apiToken));
+        }
+
+        if (string.IsNullOrWhiteSpace(apiToken)) {
             throw new ArgumentException("API token cannot be empty.", nameof(apiToken));
         }
+
+        this.httpClient = httpClient;
+        this.apiToken = apiToken;
     }
 
     /// <summary>
@@ -88,7 +96,7 @@ internal class LavaHttpClient {
     /// </summary>
     private HttpRequestMessage CreateRequest(HttpMethod method, string path) {
         var request = new HttpRequestMessage(method, path);
-        request.Headers.Add("Authorization", _apiToken);
+        request.Headers.Add("Authorization", apiToken);
         request.Headers.Add("Accept", "application/json");
         return request;
     }
@@ -102,10 +110,10 @@ internal class LavaHttpClient {
         HttpResponseMessage response;
 
         try {
-            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         } catch (HttpRequestException ex) {
             throw new LavaHttpException("Failed to send HTTP request to Lava API.", ex);
-        } catch (TaskCanceledException ex) {
+        } catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested) {
             throw new LavaHttpException("Request to Lava API timed out.", ex);
         }
 
@@ -122,7 +130,8 @@ internal class LavaHttpClient {
                 throw new LavaApiException(
                     "Failed to deserialize API response: result is null.",
                     (int)response.StatusCode,
-                    responseBody);
+                    responseBody
+                );
             }
 
             return result;
@@ -130,7 +139,8 @@ internal class LavaHttpClient {
             throw new LavaApiException(
                 $"Failed to deserialize API response: {ex.Message}",
                 (int)response.StatusCode,
-                responseBody);
+                responseBody
+            );
         }
     }
 
@@ -145,7 +155,17 @@ internal class LavaHttpClient {
             throw new LavaAuthenticationException(
                 "Authentication failed. Check your API token.",
                 statusCodeInt,
-                responseBody);
+                responseBody
+            );
+        }
+
+        // Not found errors
+        if (statusCode == HttpStatusCode.NotFound) {
+            throw new LavaNotFoundException(
+                "Resource not found.",
+                statusCodeInt,
+                responseBody
+            );
         }
 
         // Try to parse error response
@@ -165,14 +185,16 @@ internal class LavaHttpClient {
                         errorMessage,
                         errorCode,
                         statusCodeInt,
-                        responseBody);
+                        responseBody
+                    );
                 }
 
                 throw new LavaApiException(
                     errorMessage,
                     errorCode,
                     statusCodeInt,
-                    responseBody);
+                    responseBody
+                );
             }
         } catch (JsonException) {
             // If response is not JSON or doesn't contain expected fields, fall through
@@ -182,7 +204,8 @@ internal class LavaHttpClient {
         throw new LavaHttpException(
             $"HTTP request failed with status code {statusCodeInt}.",
             statusCodeInt,
-            responseBody);
+            responseBody
+        );
     }
 
     /// <summary>

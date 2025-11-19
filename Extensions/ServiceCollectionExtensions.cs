@@ -20,9 +20,13 @@ public static class ServiceCollectionExtensions {
     public static IServiceCollection AddLavaWalletClient(
         this IServiceCollection services,
         string apiToken) {
-        if (services == null) throw new ArgumentNullException(nameof(services));
-        if (string.IsNullOrWhiteSpace(apiToken))
+        if (services == null) {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        if (string.IsNullOrWhiteSpace(apiToken)) {
             throw new ArgumentException("API token cannot be empty.", nameof(apiToken));
+        }
 
         services.AddHttpClient<ILavaWalletClient, LavaWalletClient>((client) => {
             client.BaseAddress = new Uri(BaseApiUrl);
@@ -44,10 +48,17 @@ public static class ServiceCollectionExtensions {
         this IServiceCollection services,
         string apiToken,
         Action<HttpClient> configureClient) {
-        if (services == null) throw new ArgumentNullException(nameof(services));
-        if (string.IsNullOrWhiteSpace(apiToken))
+        if (services == null) {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        if (string.IsNullOrWhiteSpace(apiToken)) {
             throw new ArgumentException("API token cannot be empty.", nameof(apiToken));
-        if (configureClient == null) throw new ArgumentNullException(nameof(configureClient));
+        }
+
+        if (configureClient == null) {
+            throw new ArgumentNullException(nameof(configureClient));
+        }
 
         services.AddHttpClient<ILavaWalletClient, LavaWalletClient>((client) => {
             client.BaseAddress = new Uri(BaseApiUrl);
@@ -70,9 +81,13 @@ public static class ServiceCollectionExtensions {
     public static IServiceCollection AddLavaBusinessClient(
         this IServiceCollection services,
         string apiToken) {
-        if (services == null) throw new ArgumentNullException(nameof(services));
-        if (string.IsNullOrWhiteSpace(apiToken))
+        if (services == null) {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        if (string.IsNullOrWhiteSpace(apiToken)) {
             throw new ArgumentException("API token cannot be empty.", nameof(apiToken));
+        }
 
         services.AddHttpClient<ILavaBusinessClient, LavaBusinessClient>((client) => {
             client.BaseAddress = new Uri(BaseApiUrl);
@@ -94,10 +109,17 @@ public static class ServiceCollectionExtensions {
         this IServiceCollection services,
         string apiToken,
         Action<HttpClient> configureClient) {
-        if (services == null) throw new ArgumentNullException(nameof(services));
-        if (string.IsNullOrWhiteSpace(apiToken))
+        if (services == null) {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        if (string.IsNullOrWhiteSpace(apiToken)) {
             throw new ArgumentException("API token cannot be empty.", nameof(apiToken));
-        if (configureClient == null) throw new ArgumentNullException(nameof(configureClient));
+        }
+
+        if (configureClient == null) {
+            throw new ArgumentNullException(nameof(configureClient));
+        }
 
         services.AddHttpClient<ILavaBusinessClient, LavaBusinessClient>((client) => {
             client.BaseAddress = new Uri(BaseApiUrl);

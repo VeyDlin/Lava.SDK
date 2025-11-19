@@ -9,7 +9,7 @@ namespace Lava.SDK.Client;
 /// Client for Lava Business API operations.
 /// </summary>
 public class LavaBusinessClient : ILavaBusinessClient {
-    private readonly LavaHttpClient _httpClient;
+    private readonly LavaHttpClient httpClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LavaBusinessClient"/> class.
@@ -17,20 +17,26 @@ public class LavaBusinessClient : ILavaBusinessClient {
     /// <param name="httpClient">Configured HTTP client.</param>
     /// <param name="apiToken">Lava API token.</param>
     public LavaBusinessClient(HttpClient httpClient, string apiToken) {
-        if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
-        if (string.IsNullOrWhiteSpace(apiToken))
-            throw new ArgumentException("API token cannot be empty.", nameof(apiToken));
+        if (httpClient == null) {
+            throw new ArgumentNullException(nameof(httpClient));
+        }
 
-        _httpClient = new LavaHttpClient(httpClient, apiToken);
+        if (string.IsNullOrWhiteSpace(apiToken)) {
+            throw new ArgumentException("API token cannot be empty.", nameof(apiToken));
+        }
+
+        this.httpClient = new LavaHttpClient(httpClient, apiToken);
     }
 
     /// <inheritdoc />
     public async Task<PayoffResponse> CreatePayoffAsync(
         CreatePayoffRequest request,
         CancellationToken cancellationToken = default) {
-        if (request == null) throw new ArgumentNullException(nameof(request));
+        if (request == null) {
+            throw new ArgumentNullException(nameof(request));
+        }
 
-        return await _httpClient.PostAsync<CreatePayoffRequest, PayoffResponse>(
+        return await httpClient.PostAsync<CreatePayoffRequest, PayoffResponse>(
             "business/payoff/create",
             request,
             cancellationToken).ConfigureAwait(false);
@@ -40,9 +46,11 @@ public class LavaBusinessClient : ILavaBusinessClient {
     public async Task<PayoffResponse> GetPayoffInfoAsync(
         GetPayoffInfoRequest request,
         CancellationToken cancellationToken = default) {
-        if (request == null) throw new ArgumentNullException(nameof(request));
+        if (request == null) {
+            throw new ArgumentNullException(nameof(request));
+        }
 
-        return await _httpClient.PostAsync<GetPayoffInfoRequest, PayoffResponse>(
+        return await httpClient.PostAsync<GetPayoffInfoRequest, PayoffResponse>(
             "business/payoff/info",
             request,
             cancellationToken).ConfigureAwait(false);
@@ -52,7 +60,7 @@ public class LavaBusinessClient : ILavaBusinessClient {
     public async Task<bool> PingAsync(
         CancellationToken cancellationToken = default) {
         try {
-            var response = await _httpClient.GetAsync<JsonDocument>(
+            var response = await httpClient.GetAsync<JsonDocument>(
                 "test/ping",
                 cancellationToken).ConfigureAwait(false);
 

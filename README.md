@@ -270,6 +270,9 @@ try {
     // Invalid parameters, amount too high/low, etc.
     Console.WriteLine($"Validation error: {ex.Message}");
     Console.WriteLine($"Error code: {ex.ErrorCode}");
+} catch (LavaNotFoundException ex) {
+    // Resource not found (404)
+    Console.WriteLine($"Not found: {ex.Message}");
 } catch (LavaHttpException ex) {
     // Network error, timeout, HTTP errors
     Console.WriteLine($"HTTP error: {ex.Message}");
@@ -278,6 +281,45 @@ try {
     // Generic API error
     Console.WriteLine($"API error: {ex.Message}");
     Console.WriteLine($"Response: {ex.ResponseBody}");
+}
+```
+
+## Signature Generation (Business API)
+
+For Business API operations that require signatures:
+
+```csharp
+using Lava.SDK.Infrastructure;
+
+// Generate signature for a request
+var request = new CreatePayoffRequest {
+    Amount = 100.00m,
+    OrderId = "ORDER-123",
+    ShopId = Guid.Parse("your-shop-id"),
+    Service = "card_payoff",
+    WalletTo = "4111111111111111"
+};
+
+// Generate signature using your secret key
+var jsonBody = JsonSerializer.Serialize(request);
+request.Signature = SignatureHelper.GenerateSignature(jsonBody, "your-secret-key");
+
+// Or use the generic method
+request.Signature = SignatureHelper.GenerateSignature(request, "your-secret-key");
+```
+
+### Webhook Signature Verification
+
+```csharp
+// Verify webhook signature
+bool isValid = SignatureHelper.VerifyWebhookSignature(
+    webhookJsonBody,
+    signatureFromHeader,
+    "your-additional-key"
+);
+
+if (!isValid) {
+    return Unauthorized();
 }
 ```
 
