@@ -338,6 +338,74 @@ builder.Services.AddLavaWalletClient("YOUR_TOKEN", client => {
 
 The SDK automatically uses `IHttpClientFactory` when registered via extension methods, ensuring proper HttpClient lifecycle management.
 
+### Multi-tenant Scenarios (Factory Pattern)
+
+For SaaS applications where each user has their own Lava API token:
+
+```csharp
+// Program.cs
+builder.Services.AddLavaWalletClientFactory();
+// Or for Business API:
+builder.Services.AddLavaBusinessClientFactory();
+```
+
+```csharp
+// Controller
+[ApiController]
+[Route("api/[controller]")]
+public class PaymentController : ControllerBase {
+    private readonly ILavaWalletClientFactory factory;
+    private readonly AppDbContext db;
+
+    public PaymentController(
+        ILavaWalletClientFactory factory,
+        AppDbContext db
+    ) {
+        this.factory = factory;
+        this.db = db;
+    }
+
+    [HttpPost("create")]
+    public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDto dto) {
+        // Get user's API token from database
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userSettings = await db.UserSettings.FindAsync(userId);
+
+        if (string.IsNullOrEmpty(userSettings?.LavaApiToken)) {
+            return BadRequest("Lava API token not configured");
+        }
+
+        // Create client with user's token
+        var client = factory.CreateClient(userSettings.LavaApiToken);
+
+        var invoice = await client.CreateInvoiceAsync(new CreateInvoiceRequest {
+            WalletTo = userSettings.WalletNumber,
+            Amount = dto.Amount,
+            Comment = dto.Description
+        });
+
+        return Ok(new { PaymentUrl = invoice.Url });
+    }
+}
+```
+
+#### Standalone Factory Usage (Console Apps)
+
+```csharp
+using Lava.SDK.Client;
+
+// Create factory (remember to dispose)
+using var factory = new LavaWalletClientFactory();
+
+// Create clients for different users
+var client1 = factory.CreateClient("user1-api-token");
+var client2 = factory.CreateClient("user2-api-token");
+
+// Use clients
+var wallets1 = await client1.GetWalletsAsync();
+var wallets2 = await client2.GetWalletsAsync();
+```
+
 ## Migration from v1.x
 
 Version 2.0 is a complete rewrite with breaking changes:
