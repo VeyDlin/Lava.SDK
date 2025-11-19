@@ -5,6 +5,7 @@ This file contains practical examples of using the Lava.SDK SDK.
 ## Table of Contents
 
 - [ASP.NET Core Integration](#aspnet-core-integration)
+- [Multi-tenant Factory Pattern](#multi-tenant-factory-pattern)
 - [Console Application](#console-application)
 - [Creating Invoices](#creating-invoices)
 - [Handling Webhooks](#handling-webhooks)
@@ -171,6 +172,166 @@ public record CreatePaymentDto(
     string SuccessUrl,
     string FailUrl
 );
+```
+
+## Multi-tenant Factory Pattern
+
+For SaaS applications where each user configures their own Lava API credentials.
+
+### ASP.NET Core with Factory
+
+```csharp
+// Program.cs
+using Lava.SDK.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Register factory for dynamic API tokens
+builder.Services.AddLavaWalletClientFactory();
+// Or for Business API:
+builder.Services.AddLavaBusinessClientFactory();
+
+builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddControllers();
+var app = builder.Build();
+app.MapControllers();
+app.Run();
+```
+
+### Multi-tenant Payment Controller
+
+```csharp
+using Lava.SDK.Client;
+using Lava.SDK.Exceptions;
+using Lava.SDK.Models.Requests;
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class MultiTenantPaymentController : ControllerBase {
+    private readonly ILavaWalletClientFactory factory;
+    private readonly AppDbContext db;
+    private readonly ILogger<MultiTenantPaymentController> logger;
+
+    public MultiTenantPaymentController(
+        ILavaWalletClientFactory factory,
+        AppDbContext db,
+        ILogger<MultiTenantPaymentController> logger
+    ) {
+        this.factory = factory;
+        this.db = db;
+        this.logger = logger;
+    }
+
+    [HttpPost("create")]
+    public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDto dto) {
+        // Get current user's settings
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userSettings = await db.UserSettings
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
+        if (userSettings == null || string.IsNullOrEmpty(userSettings.LavaApiToken)) {
+            return BadRequest(new { error = "Lava API not configured. Please add your API token in settings." });
+        }
+
+        try {
+            // Create client with user's API token
+            var client = factory.CreateClient(userSettings.LavaApiToken);
+
+            var invoice = await client.CreateInvoiceAsync(new CreateInvoiceRequest {
+                WalletTo = userSettings.WalletNumber,
+                Amount = dto.Amount,
+                OrderId = Guid.NewGuid().ToString(),
+                Comment = dto.Description,
+                HookUrl = Url.Action("Webhook", "Payment", null, Request.Scheme),
+                SuccessUrl = dto.SuccessUrl,
+                FailUrl = dto.FailUrl,
+                CustomFields = $"userId:{userId}"
+            });
+
+            // Log for user's transaction history
+            await db.Transactions.AddAsync(new Transaction {
+                UserId = userId,
+                InvoiceId = invoice.Id,
+                Amount = dto.Amount,
+                Status = "pending",
+                CreatedAt = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+
+            return Ok(new {
+                success = true,
+                paymentUrl = invoice.Url,
+                invoiceId = invoice.Id
+            });
+        } catch (LavaAuthenticationException) {
+            logger.LogWarning("Invalid API token for user {UserId}", userId);
+            return BadRequest(new { error = "Invalid Lava API token. Please check your settings." });
+        } catch (LavaApiException ex) {
+            logger.LogError(ex, "Lava API error for user {UserId}", userId);
+            return StatusCode(500, new { error = "Payment service error" });
+        }
+    }
+
+    [HttpGet("wallets")]
+    public async Task<IActionResult> GetWallets() {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userSettings = await db.UserSettings
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
+        if (userSettings == null || string.IsNullOrEmpty(userSettings.LavaApiToken)) {
+            return BadRequest(new { error = "Lava API not configured" });
+        }
+
+        var client = factory.CreateClient(userSettings.LavaApiToken);
+        var wallets = await client.GetWalletsAsync();
+
+        return Ok(wallets.Select(w => new {
+            account = w.Account,
+            currency = w.Currency,
+            balance = w.Balance
+        }));
+    }
+}
+```
+
+### Standalone Factory Usage
+
+```csharp
+using Lava.SDK.Client;
+using Lava.SDK.Models.Requests;
+
+class Program {
+    static async Task Main(string[] args) {
+        // Create factory (remember to dispose when done)
+        using var factory = new LavaWalletClientFactory();
+
+        // Simulate multiple users
+        var users = new[] {
+            ("User 1", "api-token-for-user-1"),
+            ("User 2", "api-token-for-user-2"),
+            ("User 3", "api-token-for-user-3")
+        };
+
+        foreach (var (userName, apiToken) in users) {
+            Console.WriteLine($"\nProcessing {userName}...");
+
+            // Create client for this user
+            var client = factory.CreateClient(apiToken);
+
+            try {
+                var wallets = await client.GetWalletsAsync();
+                Console.WriteLine($"  Wallets: {wallets.Count}");
+
+                foreach (var wallet in wallets) {
+                    Console.WriteLine($"    {wallet.Currency}: {wallet.Balance}");
+                }
+            } catch (LavaAuthenticationException) {
+                Console.WriteLine($"  Invalid API token");
+            }
+        }
+    }
+}
 ```
 
 ## Console Application

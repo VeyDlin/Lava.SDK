@@ -134,4 +134,56 @@ public static class ServiceCollectionExtensions {
 
         return services;
     }
+
+    /// <summary>
+    /// Adds Lava Wallet client factory to the service collection.
+    /// Use this for multi-tenant scenarios where API tokens are retrieved dynamically.
+    /// </summary>
+    /// <param name="services">Service collection.</param>
+    /// <returns>Service collection for chaining.</returns>
+    public static IServiceCollection AddLavaWalletClientFactory(
+        this IServiceCollection services
+    ) {
+        if (services == null) {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        services.AddHttpClient(
+            LavaWalletClientFactory.GetHttpClientName(),
+            client => {
+                client.BaseAddress = new Uri(LavaWalletClientFactory.GetBaseApiUrl());
+                client.Timeout = TimeSpan.FromSeconds(30);
+            }
+        );
+
+        services.AddSingleton<ILavaWalletClientFactory, LavaWalletClientFactory>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds Lava Business client factory to the service collection.
+    /// Use this for multi-tenant scenarios where API tokens are retrieved dynamically.
+    /// </summary>
+    /// <param name="services">Service collection.</param>
+    /// <returns>Service collection for chaining.</returns>
+    public static IServiceCollection AddLavaBusinessClientFactory(
+        this IServiceCollection services
+    ) {
+        if (services == null) {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        services.AddHttpClient(
+            LavaBusinessClientFactory.GetHttpClientName(),
+            client => {
+                client.BaseAddress = new Uri(LavaBusinessClientFactory.GetBaseApiUrl());
+                client.Timeout = TimeSpan.FromSeconds(30);
+            }
+        );
+
+        services.AddSingleton<ILavaBusinessClientFactory, LavaBusinessClientFactory>();
+
+        return services;
+    }
 }
